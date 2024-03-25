@@ -8,7 +8,7 @@
 
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <zlib.h>
 
 #include "rwops_zlib.h"

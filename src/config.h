@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL_keycode.h>
+#include <SDL3/SDL_keycode.h>
 
 #define CONFIG_FILE "storage/config"
 

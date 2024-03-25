@@ -8,8 +8,8 @@
 
 #include "taisei.h"
 
-#include <SDL_bits.h>
-#include <SDL_mutex.h>
+#include <SDL3/SDL_bits.h>
+#include <SDL3/SDL_mutex.h>
 
 #include "log.h"
 #include "util.h"

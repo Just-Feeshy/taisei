@@ -10,7 +10,7 @@
 
 #include <windows.h>
 #include <shlwapi.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include "syspath.h"
 
