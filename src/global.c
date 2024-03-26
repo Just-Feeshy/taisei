@@ -47,7 +47,7 @@ bool gamekeypressed(KeyIndex key) {
 	return SDL_GetKeyboardState(NULL)[config_get_int(KEYIDX_TO_CFGIDX(key))] || gamepad_game_key_pressed(key);
 }
 
-static SDL_atomic_t quitting;
+static SDL_AtomicInt quitting;
 
 void taisei_quit(void) {
 	if(global.is_kiosk_mode) {
@@ -55,7 +55,7 @@ void taisei_quit(void) {
 		return;
 	}
 
-	if(SDL_AtomicCAS(&quitting, 0, 1)) {
+	if(SDL_AtomicCompareAndSwap(&quitting, 0, 1)) {
 		log_info("Exit requested");
 	}
 }

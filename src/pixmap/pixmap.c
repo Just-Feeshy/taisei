@@ -72,7 +72,7 @@ static PixmapFileFormatHandler *pixmap_handler_for_fileformat(PixmapFileFormat f
 	return NOT_NULL(fileformat_handlers[idx]);
 }
 
-static PixmapFileFormatHandler *pixmap_probe_stream(SDL_RWops *stream) {
+static PixmapFileFormatHandler *pixmap_probe_stream(SDL_IOStream *stream) {
 	for(int i = 0; i < ARRAY_SIZE(fileformat_handlers); ++i) {
 		PixmapFileFormatHandler *h = NOT_NULL(fileformat_handlers[i]);
 
@@ -81,7 +81,7 @@ static PixmapFileFormatHandler *pixmap_probe_stream(SDL_RWops *stream) {
 		}
 
 		bool match = h->probe(stream);
-		if(SDL_RWseek(stream, 0, RW_SEEK_SET) < 0) {
+		if(SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET) < 0) {
 			log_sdl_error(LOG_ERROR, "SDL_RWseek");
 			return NULL;
 		}
@@ -94,7 +94,8 @@ static PixmapFileFormatHandler *pixmap_probe_stream(SDL_RWops *stream) {
 	return NULL;
 }
 
-bool pixmap_load_stream(SDL_RWops *stream, PixmapFileFormat filefmt, Pixmap *dst, PixmapFormat preferred_format) {
+bool pixmap_load_stream(SDL_IOStream *stream, PixmapFileFormat filefmt,
+			Pixmap *dst, PixmapFormat preferred_format) {
 	PixmapFileFormatHandler *handler = NULL;
 
 	if(filefmt == PIXMAP_FILEFORMAT_AUTO) {
@@ -118,7 +119,7 @@ bool pixmap_load_stream(SDL_RWops *stream, PixmapFileFormat filefmt, Pixmap *dst
 
 bool pixmap_load_file(const char *path, Pixmap *dst, PixmapFormat preferred_format) {
 	log_debug("%s   %x", path, preferred_format);
-	SDL_RWops *stream = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *stream = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!stream) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -126,13 +127,14 @@ bool pixmap_load_file(const char *path, Pixmap *dst, PixmapFormat preferred_form
 	}
 
 	bool result = pixmap_load_stream(stream, PIXMAP_FILEFORMAT_AUTO, dst, preferred_format);
-	SDL_RWclose(stream);
+	SDL_CloseIO(stream);
 	return result;
 }
 
-static bool pixmap_save_stream_internal(
-	SDL_RWops *stream, const Pixmap *src, const PixmapSaveOptions *opts,
-	PixmapFileFormatHandler *handler
+static bool pixmap_save_stream_internal(SDL_IOStream *stream,
+					const Pixmap *src,
+					const PixmapSaveOptions *opts,
+					PixmapFileFormatHandler *handler
 ) {
 	if(UNLIKELY(!handler->save)) {
 		log_error("Can't save images in %s format", NOT_NULL(handler->name));
@@ -142,7 +144,8 @@ static bool pixmap_save_stream_internal(
 	return handler->save(stream, src, opts);
 }
 
-bool pixmap_save_stream(SDL_RWops *stream, const Pixmap *src, const PixmapSaveOptions *opts) {
+bool pixmap_save_stream(SDL_IOStream *stream, const Pixmap *src,
+			const PixmapSaveOptions *opts) {
 	PixmapFileFormat fmt = opts->file_format;
 	PixmapFileFormatHandler *h = pixmap_handler_for_fileformat(fmt);
 	return pixmap_save_stream_internal(stream, src, opts, h);
@@ -171,7 +174,7 @@ bool pixmap_save_file(const char *path, const Pixmap *src, const PixmapSaveOptio
 		);
 	}
 
-	SDL_RWops *stream = vfs_open(path, VFS_MODE_WRITE);
+	SDL_IOStream *stream = vfs_open(path, VFS_MODE_WRITE);
 
 	if(UNLIKELY(!stream)) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -179,7 +182,7 @@ bool pixmap_save_file(const char *path, const Pixmap *src, const PixmapSaveOptio
 	}
 
 	bool result = pixmap_save_stream_internal(stream, src, opts, h);
-	SDL_RWclose(stream);
+	SDL_CloseIO(stream);
 	return result;
 }
 

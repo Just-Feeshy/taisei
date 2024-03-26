@@ -288,7 +288,7 @@ static void config_delete_unknown_entries(void) {
 }
 
 void config_save(void) {
-	SDL_RWops *out = vfs_open(CONFIG_FILE, VFS_MODE_WRITE);
+	SDL_IOStream *out = vfs_open(CONFIG_FILE, VFS_MODE_WRITE);
 	ConfigEntry *e = configdefs;
 
 	if(!out) {
@@ -314,9 +314,9 @@ void config_save(void) {
 		}
 	}
 
-	SDL_RWwrite(out, sbuf.start, sbuf.pos - sbuf.start, 1);
+	SDL_WriteIO(out, sbuf.start, (sbuf.pos - sbuf.start));
 	strbuf_free(&sbuf);
-	SDL_RWclose(out);
+	SDL_CloseIO(out);
 
 	char *sp = vfs_repr(CONFIG_FILE, true);
 	log_info("Saved config '%s'", sp);
@@ -460,7 +460,7 @@ void config_load(void) {
 	config_init();
 
 	char *config_path = vfs_repr(CONFIG_FILE, true);
-	SDL_RWops *config_file = vfs_open(CONFIG_FILE, VFS_MODE_READ);
+	SDL_IOStream *config_file = vfs_open(CONFIG_FILE, VFS_MODE_READ);
 
 	if(config_file) {
 		log_info("Loading configuration from %s", config_path);
@@ -478,7 +478,7 @@ void config_load(void) {
 		}
 
 		mem_free(state);
-		SDL_RWclose(config_file);
+		SDL_CloseIO(config_file);
 
 		config_apply_upgrades(config_get_int(CONFIG_VERSION));
 	} else {

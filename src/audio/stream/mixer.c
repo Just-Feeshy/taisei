@@ -331,7 +331,7 @@ bool mixer_group_stop(Mixer *mx, AudioChannelGroup group, double fadeout) {
 // BEGIN LOAD
 
 MixerBGMImpl *mixerbgm_load(const char *vfspath) {
-	SDL_RWops *rw = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *rw = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rw) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -341,7 +341,7 @@ MixerBGMImpl *mixerbgm_load(const char *vfspath) {
 	auto bgm = ALLOC(MixerBGMImpl);
 
 	if(!astream_open(&bgm->stream, rw, vfspath)) {
-		SDL_RWclose(rw);
+		SDL_CloseIO(rw);
 		mem_free(bgm);
 		return NULL;
 	}
@@ -364,7 +364,7 @@ void mixer_notify_bgm_unload(Mixer *mx, MixerBGMImpl *bgm) {
 }
 
 MixerSFXImpl *mixersfx_load(const char *vfspath, const AudioStreamSpec *spec) {
-	SDL_RWops *rw = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *rw = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rw) {
 		log_error("VFS error: %s", vfs_get_error());

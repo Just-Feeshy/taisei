@@ -16,7 +16,7 @@ static char placeholder;
 static Color dummycolor;
 
 static SDL_Window* null_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {
-	return SDL_CreateWindow(title, x, y, w, h, flags);
+	return SDL_CreateWindowWithPosition(title, x, y, w, h, flags);
 }
 
 static void null_init(void) { }
@@ -133,17 +133,21 @@ static void null_framebuffer_clear(Framebuffer *framebuffer, BufferKindFlags fla
 static void null_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) { }
 static IntExtent null_framebuffer_get_size(Framebuffer *framebuffer) { return (IntExtent) { 64, 64 }; }
 
-static int64_t null_vertex_buffer_stream_seek(SDL_RWops *rw, int64_t offset, int whence) { return 0; }
-static int64_t null_vertex_buffer_stream_size(SDL_RWops *rw) { return (1 << 16); }
-static size_t null_vertex_buffer_stream_write(SDL_RWops *rw, const void *data, size_t size, size_t num) { return num; }
-static int null_vertex_buffer_stream_close(SDL_RWops *rw) { return 0; }
+static int64_t null_vertex_buffer_stream_seek(SDL_IOStream *rw,
+					      int64_t offset, int whence) { return 0; }
+static int64_t null_vertex_buffer_stream_size(SDL_IOStream *rw) { return (1 << 16); }
+static size_t null_vertex_buffer_stream_write(SDL_IOStream *rw,
+					      const void *data, size_t size,
+					      size_t num) { return num; }
+static int null_vertex_buffer_stream_close(SDL_IOStream *rw) { return 0; }
 
-static size_t null_vertex_buffer_stream_read(SDL_RWops *rw, void *data, size_t size, size_t num) {
+static size_t null_vertex_buffer_stream_read(SDL_IOStream *rw, void *data,
+					     size_t size, size_t num) {
 	SDL_SetError("Stream is write-only");
 	return 0;
 }
 
-static SDL_RWops dummy_stream = {
+static SDL_IOStream dummy_stream = {
 	.seek = null_vertex_buffer_stream_seek,
 	.size = null_vertex_buffer_stream_size,
 	.write = null_vertex_buffer_stream_write,
@@ -151,7 +155,7 @@ static SDL_RWops dummy_stream = {
 	.close = null_vertex_buffer_stream_close,
 };
 
-static SDL_RWops* null_vertex_buffer_get_stream(VertexBuffer *vbuf) {
+static SDL_IOStream * null_vertex_buffer_get_stream(VertexBuffer *vbuf) {
 	return &dummy_stream;
 }
 

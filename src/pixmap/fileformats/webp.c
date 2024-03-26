@@ -13,12 +13,12 @@
 
 #include <webp/decode.h>
 
-static bool px_webp_probe(SDL_RWops *stream) {
+static bool px_webp_probe(SDL_IOStream *stream) {
 	// "RIFF", file size (4 bytes), "WEBP", ("VP8 " | "VP8L" | "VP8X")
 	// https://developers.google.com/speed/webp/docs/riff_container
 
 	uchar header[16] = { 0 };
-	SDL_RWread(stream, header, sizeof(header), 1);
+	SDL_ReadIO(stream, header, sizeof(header));
 
 	return (
 		!memcmp(header, "RIFF", 4) &&
@@ -49,7 +49,8 @@ static inline const char* webp_error_str(VP8StatusCode code)  {
 	return "Unknown error";
 }
 
-static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferred_format) {
+static bool px_webp_load(SDL_IOStream *stream, Pixmap *pixmap,
+			 PixmapFormat preferred_format) {
 	WebPDecoderConfig config;
 	int status = WebPInitDecoderConfig(&config);
 
@@ -76,7 +77,8 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferr
 
 	WebPBitstreamFeatures features;
 	uint8_t buf[BUFSIZ] = { 0 };
-	size_t data_available = SDL_RWread(stream, buf, 1, sizeof(buf));
+	size_t data_available = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+		SDL_ReadIO(stream, buf, sizeof(buf));
 
 	status = WebPGetFeatures(buf, data_available, &features);
 
@@ -122,7 +124,8 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferr
 			break;
 		}
 
-		data_available = SDL_RWread(stream, buf, 1, sizeof(buf));
+		data_available = SDL_ReadIO(stream, buf, sizeof(buf));
+		data_available = (data_available <= 0) ? 0 : data_available;
 	} while(data_available > 0);
 
 	WebPIDelete(idec);
