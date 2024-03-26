@@ -77,7 +77,7 @@ static bool px_webp_load(SDL_IOStream *stream, Pixmap *pixmap,
 
 	WebPBitstreamFeatures features;
 	uint8_t buf[BUFSIZ] = { 0 };
-	size_t data_available = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+	size_t data_available = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 		SDL_ReadIO(stream, buf, sizeof(buf));
 
 	status = WebPGetFeatures(buf, data_available, &features);
