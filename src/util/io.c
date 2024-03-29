@@ -26,7 +26,10 @@ char *SDL_RWgets(SDL_IOStream *rwops, char *buf, size_t bufsize) {
 
 	while(ptr <= end) {
 		if(!SDL_ReadU8(rwops, (uint8_t*)&c)) {
-			log_sdl_error(LOG_ERROR, "SDL_ReadU8");
+			if(SDL_GetIOStatus(rwops) != SDL_IO_STATUS_EOF) {
+				log_sdl_error(LOG_ERROR, "SDL_ReadU8");
+			}
+
 			break;
 		}
 
@@ -58,7 +61,10 @@ char *SDL_RWgets_realloc(SDL_IOStream *rwops, char **buf, size_t *bufsize) {
 
 	while(true) {
 		if(!SDL_ReadU8(rwops, (uint8_t*)&c)) {
-			log_sdl_error(LOG_ERROR, "SDL_ReadU8");
+			if(SDL_GetIOStatus(rwops) != SDL_IO_STATUS_EOF) {
+				log_sdl_error(LOG_ERROR, "SDL_ReadU8");
+			}
+
 			break;
 		}
 
