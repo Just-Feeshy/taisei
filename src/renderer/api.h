@@ -1014,7 +1014,7 @@ bool r_supports(RendererFeature feature) {
 }
 
 INLINE
-uint r_integer_log_2(uint x) {
+uint r_integer_log_2(uint x) { // A comment
 	uint log = 0;
 	while(x >>= 1) ++log;
 	return log;
